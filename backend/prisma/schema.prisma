@@ -15,8 +15,20 @@ model User {
   password      String
   role          Role          @default(USER)
   transactions  Transaction[] 
+  tokens        Token[]       // Added relation to Token
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+}
+
+model Token {
+  id         String    @id @default(uuid())
+  token      String    @unique
+  type       TokenType
+  expiresAt  DateTime
+  user       User      @relation(fields: [userId], references: [id])
+  userId     String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 }
 
 model Transaction {
@@ -40,4 +52,9 @@ enum Role {
   ADMIN
   USER
   READ_ONLY
+}
+
+enum TokenType {
+  ACCESS
+  REFRESH
 }
