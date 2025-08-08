@@ -171,3 +171,23 @@ export const getCurrentUserController = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
+export const getAllUsersController = async (req: Request, res: Response) => {
+  try {
+    // Fetch all users
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+    // Return success response
+    res.status(200).json({ success: true, users });
+  } catch (error) {
+    console.error("Get all users error:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};

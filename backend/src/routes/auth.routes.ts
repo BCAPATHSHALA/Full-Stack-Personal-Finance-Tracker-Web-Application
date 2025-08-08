@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { authLimiter } from "../middleware/ratelimit.middleware";
 import {
+  getAllUsersController,
   getCurrentUserController,
   loginController,
   logoutController,
@@ -22,5 +23,14 @@ router.post("/logout", authMiddleware, authLimiter, logoutController);
 
 // Get current user route: GET /api/auth/me
 router.get("/me", authMiddleware, authLimiter, getCurrentUserController);
+
+// Admin route: GET /api/auth/users
+router.get(
+  "/users",
+  authMiddleware,
+  roleMiddleware(["ADMIN"]),
+  authLimiter,
+  getAllUsersController
+);
 
 export default router;
