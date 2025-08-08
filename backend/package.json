@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Personal Finance Tracker Backend",
   "main": "dist/index.js",
-  "type": "module",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
