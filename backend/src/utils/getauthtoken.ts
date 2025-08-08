@@ -1,9 +1,10 @@
 import { Request } from "express";
 
 export const getAuthToken = (req: Request): string | undefined => {
-  return (
-    (req.headers["token"] as string) ||
+  const token =
+    req.headers?.token ||
     req.cookies?.token ||
-    (req.headers["authorization"] as string)?.replace("Bearer ", "")
-  );
+    req.header("Authorization")?.replace("Bearer ", "");
+
+  return typeof token === "string" ? token : undefined;
 };

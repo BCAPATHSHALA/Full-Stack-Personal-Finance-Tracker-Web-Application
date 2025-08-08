@@ -6,7 +6,7 @@ export const authLimiter = rateLimit({
   limit: 5, // Limit each IP to 5 requests per window
   message: {
     success: false,
-    message: "Too many login/register attempts. Please try again later.",
+    message: "Too many auth attempts. Please try again later.",
   },
   standardHeaders: true,
   legacyHeaders: false,
