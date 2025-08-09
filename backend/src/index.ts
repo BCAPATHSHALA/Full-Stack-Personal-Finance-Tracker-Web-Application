@@ -9,9 +9,11 @@ app.use(cookieParser());
 
 // Import routes
 import authRoutes from "./routes/auth.routes";
+import transactionRoutes from "./routes/transactions.routes";
 
 // Use routes
 app.use("/api/auth", authRoutes);
+app.use("/api/transactions", transactionRoutes);
 
 // health check route
 app.get("/", (_, res) => {
