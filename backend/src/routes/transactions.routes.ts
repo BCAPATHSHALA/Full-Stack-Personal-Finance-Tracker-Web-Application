@@ -29,7 +29,7 @@ router.post(
   addTransactionController
 );
 
-// EDIT transaction by ID: GET /transactions/:id
+// EDIT transaction by ID: PUT /transactions/:id
 router.put(
   "/:id",
   authMiddleware,
@@ -38,7 +38,7 @@ router.put(
   editTransactionController
 );
 
-// DELETE transaction by ID: PUT /transactions/:id
+// DELETE transaction by ID: DELETE /transactions/:id
 router.delete(
   "/:id",
   authMiddleware,
