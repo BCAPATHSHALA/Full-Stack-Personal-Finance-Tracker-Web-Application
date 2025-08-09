@@ -8,7 +8,7 @@ import { PrismaClient } from "../generated/prisma";
 
 const prisma = new PrismaClient();
 
-// Todo: Implement the filtering by category and from date & to date, sorting by ascending or descending date, search by keyword and pagination logic
+// Todo: Implement the filtering by category and from date & to date & transaction type(income/expense), sorting by ascending or descending date & amount, search by keyword(transaction id) and pagination logic
 
 export const getAllTransactionsController = async (
   req: Request,
