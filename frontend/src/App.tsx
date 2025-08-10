@@ -10,7 +10,9 @@ import { ThemeProvider } from "./contexts/ThemeProvider";
 import { AuthProvider } from "./contexts/AuthProvider";
 
 // Lazy load pages for code splitting
-const LoginPage = React.lazy(() => import("./pages/LoginPage"));
+const LoginPage = React.lazy(() =>
+  import("./pages/LoginPage").then((module) => ({ default: module.LoginPage }))
+);
 const RegisterPage = React.lazy(() => import("./pages/RegisterPage"));
 const DashboardPage = React.lazy(() => import("./pages/DashboardPage"));
 const TransactionsPage = React.lazy(() => import("./pages/TransactionsPage"));
