@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import LoadingSpinner from "./components/LoadingSpinner";
 import { ThemeProvider } from "./contexts/ThemeProvider";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider } from "./contexts/AuthProvider";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Layout } from "./components/Layout";
 

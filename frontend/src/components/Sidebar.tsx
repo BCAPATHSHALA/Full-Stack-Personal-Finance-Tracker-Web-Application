@@ -3,7 +3,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { BarChart3, CreditCard, Home, LogOut } from "lucide-react";
+import { BarChart3, CreditCard, Home, LogOut, Wallet } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 interface SidebarProps {
@@ -47,7 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
           <div className="flex items-center mb-4">
-            <BarChart3 className="h-6 w-6 mr-2" />
+            <Wallet className="h-6 w-6 mr-2" />
             <h2 className="text-lg font-semibold tracking-tight">
               Finance Tracker
             </h2>
