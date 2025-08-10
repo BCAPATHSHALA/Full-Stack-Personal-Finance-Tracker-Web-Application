@@ -20,7 +20,11 @@ const RegisterPage = React.lazy(() =>
     default: module.RegisterPage,
   }))
 );
-const DashboardPage = React.lazy(() => import("./pages/DashboardPage"));
+const DashboardPage = React.lazy(() =>
+  import("./pages/DashboardPage").then((module) => ({
+    default: module.DashboardPage,
+  }))
+);
 const TransactionsPage = React.lazy(() => import("./pages/TransactionsPage"));
 const AnalyticsPage = React.lazy(() => import("./pages/AnalyticsPage"));
 const NotFoundPage = React.lazy(() => import("./pages/NotFoundPage"));
