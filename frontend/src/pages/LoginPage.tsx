@@ -22,6 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -56,11 +57,7 @@ export const LoginPage: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
