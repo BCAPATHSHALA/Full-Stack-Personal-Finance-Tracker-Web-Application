@@ -7,15 +7,22 @@ import {
 } from "react-router-dom";
 import LoadingSpinner from "./components/LoadingSpinner";
 import { ThemeProvider } from "./contexts/ThemeProvider";
-import { AuthProvider } from "./contexts/AuthProvider";
+import { AuthProvider } from "./contexts/AuthContext";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { Layout } from "./components/Layout";
 
 // Lazy load pages for code splitting
 const LoginPage = React.lazy(() =>
   import("./pages/LoginPage").then((module) => ({ default: module.LoginPage }))
 );
-const RegisterPage = React.lazy(() => import("./pages/RegisterPage"));
+const RegisterPage = React.lazy(() =>
+  import("./pages/RegisterPage").then((module) => ({
+    default: module.RegisterPage,
+  }))
+);
 const DashboardPage = React.lazy(() => import("./pages/DashboardPage"));
 const TransactionsPage = React.lazy(() => import("./pages/TransactionsPage"));
+const AnalyticsPage = React.lazy(() => import("./pages/AnalyticsPage"));
 const NotFoundPage = React.lazy(() => import("./pages/NotFoundPage"));
 
 function App() {
@@ -30,21 +37,44 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
 
-                {/* Protected routes: Dashboard, Transactions */}
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/transactions" element={<TransactionsPage />} />
-
+                {/* Protected routes: Dashboard, Transactions, Analytics */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <DashboardPage />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/transactions"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <TransactionsPage />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/analytics"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <AnalyticsPage />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
                 {/* Default route: Dashboard */}
                 <Route
                   path="/"
                   element={<Navigate to="/dashboard" replace />}
                 />
                 {/* Not found route */}
-                <Route path="/not-found" element={<NotFoundPage />} />
-                <Route
-                  path="*"
-                  element={<Navigate to="/not-found" replace />}
-                />
+                <Route path="/*" element={<NotFoundPage />} />
               </Routes>
             </Suspense>
           </div>
