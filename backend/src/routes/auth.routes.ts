@@ -19,17 +19,16 @@ router.post("/register", authLimiter, registerController);
 router.post("/login", authLimiter, loginController);
 
 // Logout route: POST /api/auth/logout
-router.post("/logout", authMiddleware, authLimiter, logoutController);
+router.post("/logout", authMiddleware, logoutController);
 
 // Get current user route: GET /api/auth/me
-router.get("/me", authMiddleware, authLimiter, getCurrentUserController);
+router.get("/me", authMiddleware, getCurrentUserController);
 
 // Admin route: GET /api/auth/users
 router.get(
   "/users",
   authMiddleware,
   roleMiddleware(["ADMIN"]),
-  authLimiter,
   getAllUsersController
 );
 

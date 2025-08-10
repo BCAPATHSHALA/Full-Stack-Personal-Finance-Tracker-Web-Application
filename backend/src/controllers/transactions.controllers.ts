@@ -20,6 +20,16 @@ interface TransactionQueryParams {
   sortOrder?: "asc" | "desc";
 }
 
+// Helper function to convert date string to ISO DateTime
+const convertToDateTime = (dateString: string): Date => {
+  // If it's already a full datetime, return as is
+  if (dateString.includes("T")) {
+    return new Date(dateString);
+  }
+  // If it's just a date (YYYY-MM-DD), add time component
+  return new Date(`${dateString}T00:00:00.000Z`);
+};
+
 // GET /transactions/user/:id - Get user-specific transaction analytics
 export const getUserTransactionsController = async (
   req: Request,
@@ -80,10 +90,10 @@ export const getUserTransactionsController = async (
     if (fromDate || toDate) {
       whereClause.date = {};
       if (fromDate) {
-        whereClause.date.gte = new Date(fromDate);
+        whereClause.date.gte = convertToDateTime(fromDate);
       }
       if (toDate) {
-        whereClause.date.lte = new Date(toDate);
+        whereClause.date.lte = convertToDateTime(toDate);
       }
     }
 
@@ -217,10 +227,10 @@ export const getAllTransactionsController = async (
     if (fromDate || toDate) {
       whereClause.date = {};
       if (fromDate) {
-        whereClause.date.gte = new Date(fromDate);
+        whereClause.date.gte = convertToDateTime(fromDate);
       }
       if (toDate) {
-        whereClause.date.lte = new Date(toDate);
+        whereClause.date.lte = convertToDateTime(toDate);
       }
     }
 
@@ -315,9 +325,17 @@ export const addTransactionController = async (req: Request, res: Response) => {
       });
     }
 
-    // Create a new transaction with these fields: amount, type, category
+    const { type, amount, category, date } = validatedData.data;
+
+    // Create a new transaction with proper date handling
     const transaction = await prisma.transaction.create({
-      data: { ...req.body, userId },
+      data: {
+        type,
+        amount,
+        category,
+        date: date ? convertToDateTime(date) : new Date(),
+        userId,
+      },
       include: {
         user: {
           select: {
@@ -373,6 +391,13 @@ export const editTransactionController = async (
     const whereClause: any = { id: req.params.id };
     if (userRole !== "ADMIN") {
       whereClause.userId = userId;
+    }
+
+    const updateData: any = { ...validatedData.data };
+
+    // Handle date conversion if date is provided
+    if (updateData.date) {
+      updateData.date = convertToDateTime(updateData.date);
     }
 
     // Update the transaction with these fields: amount, type, category
