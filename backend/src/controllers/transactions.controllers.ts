@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import {
   transactionCreateSchema,
   transactionUpdateSchema,
@@ -8,8 +8,158 @@ import { PrismaClient } from "../generated/prisma";
 
 const prisma = new PrismaClient();
 
-// Todo: Implement the filtering by category and from date & to date & transaction type(income/expense), sorting by ascending or descending date & amount, search by keyword(transaction id) and pagination logic
+interface TransactionQueryParams {
+  page?: string;
+  limit?: string;
+  category?: string;
+  fromDate?: string;
+  toDate?: string;
+  transactionType?: "INCOME" | "EXPENSE";
+  transactionSearch?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}
 
+// GET /transactions/user/:id - Get user-specific transaction analytics
+export const getUserTransactionsController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    // Check if user is authenticated
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ error: "Unauthorized: User not found" });
+    }
+
+    const { id: targetUserId } = req.params;
+    const currentUser = req.user;
+
+    // Authorization check
+    if (currentUser.role !== "ADMIN" && currentUser.id !== targetUserId) {
+      return res
+        .status(403)
+        .json({ error: "Forbidden: Cannot access other user's data" });
+    }
+
+    const {
+      page = "1",
+      limit = "10",
+      category = "",
+      fromDate = "",
+      toDate = "",
+      transactionType = "",
+      transactionSearch = "",
+      sortBy = "date",
+      sortOrder = "desc",
+    } = req.query as TransactionQueryParams;
+
+    const pageNum = Number.parseInt(page);
+    const limitNum = Number.parseInt(limit);
+    const offset = (pageNum - 1) * limitNum;
+
+    // Create cache key
+    const cacheKey = `transactions:user:${targetUserId}:${JSON.stringify(
+      req.query
+    )}`;
+
+    // Try to get cached data
+    const cachedData = await cacheGet(cacheKey);
+    if (cachedData) {
+      return res.status(200).json(cachedData);
+    }
+
+    // Build where clause
+    const whereClause: any = { userId: targetUserId };
+
+    // Filter by category
+    if (category) {
+      whereClause.category = { contains: category, mode: "insensitive" };
+    }
+
+    // Filter by date range
+    if (fromDate || toDate) {
+      whereClause.date = {};
+      if (fromDate) {
+        whereClause.date.gte = new Date(fromDate);
+      }
+      if (toDate) {
+        whereClause.date.lte = new Date(toDate);
+      }
+    }
+
+    // Filter by transaction type
+    if (transactionType && ["INCOME", "EXPENSE"].includes(transactionType)) {
+      whereClause.type = transactionType;
+    }
+
+    // Search by transaction ID
+    if (transactionSearch) {
+      whereClause.id = { contains: transactionSearch, mode: "insensitive" };
+    }
+
+    // Build orderBy clause
+    let orderBy: any = {};
+    switch (sortBy) {
+      case "date":
+        orderBy = { date: sortOrder };
+        break;
+      case "amount":
+        orderBy = { amount: sortOrder };
+        break;
+      case "updatedAt":
+        orderBy = { updatedAt: sortOrder };
+        break;
+      default:
+        orderBy = { date: sortOrder };
+    }
+
+    // Get transactions
+    const transactions = await prisma.transaction.findMany({
+      where: whereClause,
+      orderBy,
+      skip: offset,
+      take: limitNum,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
+    });
+
+    // Get total count
+    const totalTransactions = await prisma.transaction.count({
+      where: whereClause,
+    });
+
+    const result = {
+      transactions,
+      pagination: {
+        currentPage: pageNum,
+        totalPages: Math.ceil(totalTransactions / limitNum),
+        totalTransactions,
+        hasNext: pageNum < Math.ceil(totalTransactions / limitNum),
+        hasPrev: pageNum > 1,
+      },
+      success: true,
+      message: "User transactions fetched successfully",
+    };
+
+    // Cache the result for 15 minutes
+    await cacheSet(cacheKey, result, 15 * 60);
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error("Error fetching user transactions:", error);
+    return res.status(500).json({ error: "Error fetching user transactions" });
+  }
+};
+
+// Todo: Implement the filtering by category and from date & to date & transaction type(income/expense), sorting by ascending or descending date & amount, search by keyword(transaction id) and pagination logic
 export const getAllTransactionsController = async (
   req: Request,
   res: Response
@@ -22,7 +172,27 @@ export const getAllTransactionsController = async (
 
     // Get user ID from request
     const userId = req.user.id;
-    const cacheKey = `transactions:${userId}`;
+    const userRole = req.user.role;
+
+    const {
+      page = "1",
+      limit = "10",
+      category = "",
+      fromDate = "",
+      toDate = "",
+      transactionType = "",
+      transactionSearch = "",
+      sortBy = "date",
+      sortOrder = "desc",
+    } = req.query as TransactionQueryParams;
+
+    const pageNum = Number.parseInt(page);
+    const limitNum = Number.parseInt(limit);
+    const offset = (pageNum - 1) * limitNum;
+
+    const cacheKey = `transactions:${userId}:${userRole}:${JSON.stringify(
+      req.query
+    )}`;
 
     // Try to get cached transactions
     const cachedTransactions = await cacheGet(cacheKey);
@@ -30,21 +200,96 @@ export const getAllTransactionsController = async (
       return res.status(200).json(cachedTransactions);
     }
 
-    // Fetch from database
+    // Build where clause based on user role
+    const whereClause: any = {};
+
+    // Non-admin users can only see their own transactions
+    if (userRole !== "ADMIN") {
+      whereClause.userId = userId;
+    }
+
+    // Filter by category
+    if (category) {
+      whereClause.category = { contains: category, mode: "insensitive" };
+    }
+
+    // Filter by date range
+    if (fromDate || toDate) {
+      whereClause.date = {};
+      if (fromDate) {
+        whereClause.date.gte = new Date(fromDate);
+      }
+      if (toDate) {
+        whereClause.date.lte = new Date(toDate);
+      }
+    }
+
+    // Filter by transaction type
+    if (transactionType && ["INCOME", "EXPENSE"].includes(transactionType)) {
+      whereClause.type = transactionType;
+    }
+
+    // Search by transaction ID
+    if (transactionSearch) {
+      whereClause.id = { contains: transactionSearch, mode: "insensitive" };
+    }
+
+    // Build orderBy clause
+    let orderBy: any = {};
+    switch (sortBy) {
+      case "date":
+        orderBy = { date: sortOrder };
+        break;
+      case "amount":
+        orderBy = { amount: sortOrder };
+        break;
+      case "updatedAt":
+        orderBy = { updatedAt: sortOrder };
+        break;
+      default:
+        orderBy = { date: sortOrder };
+    }
+
+    // Fetch from database with pagination
     const transactions = await prisma.transaction.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
+      where: whereClause,
+      orderBy,
+      skip: offset,
+      take: limitNum,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
     });
 
-    // Cache the result for 15 minutes
-    await cacheSet(cacheKey, transactions, 15 * 60);
+    // Get total count for pagination
+    const totalTransactions = await prisma.transaction.count({
+      where: whereClause,
+    });
 
-    // Return the transactions
-    return res.status(200).json({
+    const result = {
       transactions,
+      pagination: {
+        currentPage: pageNum,
+        totalPages: Math.ceil(totalTransactions / limitNum),
+        totalTransactions,
+        hasNext: pageNum < Math.ceil(totalTransactions / limitNum),
+        hasPrev: pageNum > 1,
+      },
       success: true,
       message: "Transactions fetched successfully",
-    });
+    };
+
+    // Cache the result for 15 minutes
+    await cacheSet(cacheKey, result, 15 * 60);
+
+    return res.status(200).json(result);
   } catch (error) {
     console.error("Error fetching transactions:", error);
     return res.status(500).json({ error: "Error fetching transactions" });
@@ -73,11 +318,21 @@ export const addTransactionController = async (req: Request, res: Response) => {
     // Create a new transaction with these fields: amount, type, category
     const transaction = await prisma.transaction.create({
       data: { ...req.body, userId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
     });
 
-    // Invalidate cache for transactions
-    const cacheKey = `transactions:${userId}`;
-    await cacheDel(cacheKey);
+    // Invalidate cache for transactions and analytics
+    await cacheDel(`transactions:${userId}*`);
+    await cacheDel(`analytics:*`);
 
     // Return the transactions
     return res.status(200).json({
@@ -103,6 +358,7 @@ export const editTransactionController = async (
 
     // Get user ID from request
     const userId = req.user.id;
+    const userRole = req.user.role;
 
     // Validate request body
     const validatedData = transactionUpdateSchema.safeParse(req.body);
@@ -113,18 +369,35 @@ export const editTransactionController = async (
       });
     }
 
+    // Build where clause based on user role
+    const whereClause: any = { id: req.params.id };
+    if (userRole !== "ADMIN") {
+      whereClause.userId = userId;
+    }
+
     // Update the transaction with these fields: amount, type, category
     const transaction = await prisma.transaction.update({
-      where: { id: req.params.id, userId },
+      where: whereClause,
       data: req.body,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
     });
+
     if (!transaction) {
       return res.status(404).json({ error: "Transaction not found" });
     }
 
-    // Invalidate cache for transactions
-    const cacheKey = `transactions:${userId}`;
-    await cacheDel(cacheKey);
+    // Invalidate cache for transactions and analytics
+    await cacheDel(`transactions:*`);
+    await cacheDel(`analytics:*`);
 
     // Return the transactions
     return res.status(200).json({
@@ -137,6 +410,7 @@ export const editTransactionController = async (
     return res.status(500).json({ error: "Error editing transaction" });
   }
 };
+
 export const deleteTransactionController = async (
   req: Request,
   res: Response
@@ -149,18 +423,26 @@ export const deleteTransactionController = async (
 
     // Get user ID from request
     const userId = req.user.id;
+    const userRole = req.user.role;
+
+    // Build where clause based on user role
+    const whereClause: any = { id: req.params.id };
+    if (userRole !== "ADMIN") {
+      whereClause.userId = userId;
+    }
 
     // Delete the transaction
     const transaction = await prisma.transaction.delete({
-      where: { id: req.params.id, userId },
+      where: whereClause,
     });
+
     if (!transaction) {
       return res.status(404).json({ error: "Transaction not found" });
     }
 
-    // Invalidate cache for transactions
-    const cacheKey = `transactions:${userId}`;
-    await cacheDel(cacheKey);
+    // Invalidate cache for transactions and analytics
+    await cacheDel(`transactions:*`);
+    await cacheDel(`analytics:*`);
 
     // Return the transactions
     return res.status(200).json({

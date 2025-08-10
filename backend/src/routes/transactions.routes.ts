@@ -7,17 +7,29 @@ import {
   deleteTransactionController,
   editTransactionController,
   getAllTransactionsController,
+  getUserTransactionsController,
 } from "../controllers/transactions.controllers";
 
 const router = Router();
 
 // Get all transactions: GET /transactions
+// Query params: page, limit, category, fromDate, toDate, transactionType, transactionSearch, sortBy, sortOrder
 router.get(
   "/",
   authMiddleware,
   transactionLimiter,
   roleMiddleware(["ADMIN", "USER", "READ_ONLY"]),
   getAllTransactionsController
+);
+
+// Get user-specific transactions: GET /transactions/user/:id
+// Query params: page, limit, category, fromDate, toDate, transactionType, transactionSearch, sortBy, sortOrder
+router.get(
+  "/user/:id",
+  authMiddleware,
+  roleMiddleware(["ADMIN", "USER", "READ_ONLY"]),
+  transactionLimiter,
+  getUserTransactionsController
 );
 
 // ADD new transaction: POST /transactions
