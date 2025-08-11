@@ -19,6 +19,12 @@ import {
 } from "@/components/transactions/TransactionFilters";
 import { useNavigate } from "react-router-dom";
 
+import {
+  EditTransactionDialog,
+  type TransactionUpdateData,
+} from "@/components/transactions/EditTransactionDialog";
+import { DeleteTransactionDialog } from "@/components/transactions/DeleteTransactionDialog";
+
 interface Transaction {
   id: string;
   type: "INCOME" | "EXPENSE";
@@ -36,8 +42,15 @@ interface Transaction {
 
 export const TransactionsPage: React.FC = () => {
   const { user } = useAuth();
-  const { transactions, loading, error, pagination, fetchTransactions } =
-    useTransactions();
+  const {
+    transactions,
+    loading,
+    error,
+    pagination,
+    fetchTransactions,
+    updateTransaction,
+    deleteTransaction,
+  } = useTransactions();
 
   const [filters, setFilters] = useState<FiltersType>({
     page: 1,
@@ -50,6 +63,13 @@ export const TransactionsPage: React.FC = () => {
     sortBy: "date",
     sortOrder: "desc",
   });
+
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null);
+  const [deletingTransaction, setDeletingTransaction] =
+    useState<Transaction | null>(null);
 
   const canModify = user?.role === "ADMIN" || user?.role === "USER";
 
@@ -93,12 +113,48 @@ export const TransactionsPage: React.FC = () => {
     }));
   };
 
-  const handleEdit = async (transaction: Transaction) => {
-    console.log("Editing transaction:", transaction);
+  const onEditSubmit = async (data: TransactionUpdateData) => {
+    if (!editingTransaction) return;
+
+    try {
+      // Convert Date to string if present
+      const updatedData: Partial<
+        Omit<Transaction, "id" | "updatedAt" | "user">
+      > = {
+        ...data,
+        date: data.date ? data.date.toISOString() : undefined,
+      };
+      await updateTransaction(editingTransaction.id, updatedData);
+      setIsEditDialogOpen(false);
+      setEditingTransaction(null);
+    } catch (err) {
+      console.error("Update transaction error:", err);
+    }
   };
 
-  const handleDelete = async (id: string) => {
-    console.log("Deleting transaction with ID:", id);
+  const handleEdit = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    const transaction = transactions.find((t) => t.id === id);
+    if (transaction) {
+      setDeletingTransaction(transaction);
+      setIsDeleteDialogOpen(true);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingTransaction) return;
+
+    try {
+      await deleteTransaction(deletingTransaction.id);
+      setIsDeleteDialogOpen(false);
+      setDeletingTransaction(null);
+    } catch (err) {
+      console.error("Delete error:", err);
+    }
   };
 
   const navigate = useNavigate();
@@ -150,6 +206,23 @@ export const TransactionsPage: React.FC = () => {
           />
         </CardContent>
       </Card>
+
+      {/* Dialogs: Add, Edit and Delete */}
+      <EditTransactionDialog
+        isOpen={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        onSubmit={onEditSubmit}
+        isSubmitting={loading}
+        editingTransaction={editingTransaction}
+      />
+
+      <DeleteTransactionDialog
+        isOpen={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        isDeleting={loading}
+        transaction={deletingTransaction}
+      />
     </div>
   );
 };
