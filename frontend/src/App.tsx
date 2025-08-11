@@ -36,7 +36,11 @@ const UserTransactionsPage = React.lazy(() =>
   }))
 );
 
-const AnalyticsPage = React.lazy(() => import("./pages/AnalyticsPage"));
+const AnalyticsPage = React.lazy(() =>
+  import("./pages/AnalyticsPage").then((module) => ({
+    default: module.AnalyticsPage,
+  }))
+);
 const ManageAllUsersPage = React.lazy(
   () => import("./pages/ManageAllUsersPage")
 );
