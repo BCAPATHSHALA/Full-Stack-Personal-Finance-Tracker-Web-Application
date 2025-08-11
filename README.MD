@@ -1,60 +1,55 @@
 # Personal Finance Tracker Application
 
-This is a personal finance tracker application that allows you to track your expenses and income. It is a simple and easy to use application that is perfect for people who want to track their expenses and income. Check analysis and reports to get a better understanding of your finances.
+A simple and intuitive personal finance tracker that helps you monitor your expenses and income effortlessly. Gain insights through detailed reports and analysis to better manage your finances.
 
 ## Features
 
-- Track your expenses and income
-- View your balance
-- View your transactions
-- Add new transactions
-- Delete transactions
-- Edit transactions
-- Sort transactions
-- Filter transactions
-- Search transactions
-- Check analysis and reports
+- Track expenses and income seamlessly
+- View your current balance
+- Browse all your transactions
+- Add, edit, and delete transactions
+- Sort, filter, and search transactions for easy navigation
+- Detailed financial analysis and reports
 - Export transactions to CSV (coming soon)
 - Import transactions from CSV (coming soon)
 
 ## Installation
 
-First, clone the repository through HTTPS or SSH:
+Clone the repository using HTTPS or SSH:
 
 ```bash
+# Using HTTPS
 git clone https://github.com/BCAPATHSHALA/Full-Stack-Personal-Finance-Tracker-Web-Application.git
-```
 
-OR
-
-```bash
+# Or using SSH
 git clone git@github.com:BCAPATHSHALA/Full-Stack-Personal-Finance-Tracker-Web-Application.git
 ```
 
-We have two folders:
+The project contains two main folders:
 
-- backend: contains the backend code
-- frontend: contains the frontend code
+- `backend` – Backend server code
+- `frontend` – Frontend client code
 
-To install the backend, run the following command:
+## Backend Setup
 
 ```bash
 cd backend
 npm install
 ```
 
-To install the frontend, run the following command:
+## Frontend Setup
 
 ```bash
 cd frontend
 npm install
 ```
 
-## Install Docker in your system before running the redis container
+## Running Redis with Docker
 
-Install [Docker](https://docs.docker.com/desktop/setup/install/windows-install/) Ensure Docker Desktop (for Windows/macOS) or Docker Engine (for Linux) is installed and running on your system.
+Before running the Redis container, ensure Docker is installed and running on your system:
+[Docker Installation Guide](https://docs.docker.com/desktop/setup/install/windows-install/)
 
-Run the Redis Stack container with Redis Insight and Server:
+Start the Redis Stack container (includes RedisInsight UI):
 
 ```bash
 docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
@@ -66,41 +61,49 @@ OR (if you don't want to use Redis Insight):
 docker run -d --name redis-stack -p 6379:6379 redis/redis-stack:latest
 ```
 
-Create the [NEON](https://neon.tech/) database and get the connection string for PostgreSQL:
+## Database Setup
 
-Setup the `.env` file in the backend folder:
+Create a **PostgreSQL** database using [NEON](https://neon.tech/) and obtain your connection string.
+
+Create a `.env` file in the root directory of the backend folder with the following environment variables:
 
 ```bash
 PORT=3000
 
-DATABASE_URL="postgresql_url_from_neon"
+DATABASE_URL="your_neon_postgresql_connection_url"
 
 REDIS_URL="redis://localhost:6379"
-JWT_SECRET="jwt_secret_key"
 
-NODE_ENV="development" or "production"
+JWT_SECRET="your_jwt_secret_key"
 
-CLIENT_URL="http://localhost:your_frontend_port"
+NODE_ENV="development" # or "production"
+
+CLIENT_URL="http://localhost:5173" # or your frontend URL
 ```
 
 Note: `NODE_ENV="development"` for local development and `NODE_ENV="production"` for production.
 
-Run the backend:
+## Running the Application
+
+1. Start the backend server:
 
 ```bash
 npm run dev
 ```
 
----
-
-Note: If you want to use the frontend, you need to run the backend first.
-
-Run the frontend:
+2. Then start the frontend server (ensure backend is running first):
 
 ```bash
 npm run dev
 ```
 
-Visit the frontend at [http://localhost:5173](http://localhost:5173)
+Access the frontend at: [http://localhost:5173](http://localhost:5173)
 
-## API Documentation (Comming soon)
+## Deployment Links
+
+- [Backend Api (Render)](https://full-stack-personal-finance-tracker-web.onrender.com)
+- [Frontend App (Vercel)](https://full-stack-personal-finance-tracker-one.vercel.app)
+
+## API Documentation
+
+Coming soon
