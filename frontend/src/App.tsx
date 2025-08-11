@@ -35,7 +35,11 @@ const UserTransactionsPage = React.lazy(() =>
     default: module.UserTransactionsPage,
   }))
 );
+
 const AnalyticsPage = React.lazy(() => import("./pages/AnalyticsPage"));
+const ManageAllUsersPage = React.lazy(
+  () => import("./pages/ManageAllUsersPage")
+);
 const NotFoundPage = React.lazy(() => import("./pages/NotFoundPage"));
 
 function App() {
@@ -50,7 +54,7 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
 
-                {/* Protected routes: Dashboard, Transactions, Analytics */}
+                {/* Protected routes: Dashboard, Transactions, Analytics, ManageAllUsers */}
                 <Route
                   path="/dashboard"
                   element={
@@ -87,6 +91,16 @@ function App() {
                     <ProtectedRoute roles={["ADMIN", "USER", "READ_ONLY"]}>
                       <Layout>
                         <AnalyticsPage />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/users"
+                  element={
+                    <ProtectedRoute roles={["ADMIN"]}>
+                      <Layout>
+                        <ManageAllUsersPage />
                       </Layout>
                     </ProtectedRoute>
                   }

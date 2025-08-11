@@ -3,7 +3,14 @@ import { useAuth } from "../contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { BarChart3, CreditCard, Home, LogOut, Wallet } from "lucide-react";
+import {
+  BarChart3,
+  CreditCard,
+  Home,
+  LogOut,
+  User2,
+  Wallet,
+} from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 interface SidebarProps {
@@ -35,6 +42,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       icon: BarChart3,
       roles: ["ADMIN", "USER", "READ_ONLY"],
       description: "Financial insights and reports",
+    },
+    {
+      name: "All Users",
+      href: "/users",
+      icon: User2,
+      roles: ["ADMIN"],
+      description: "Manage all users in the system",
     },
   ];
 
