@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import LoadingSpinner from "./components/LoadingSpinner";
 import { ThemeProvider } from "./contexts/ThemeProvider";
-import { AuthProvider } from "./contexts/AuthProvider";
+import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Layout } from "./components/Layout";
 
@@ -25,7 +25,16 @@ const DashboardPage = React.lazy(() =>
     default: module.DashboardPage,
   }))
 );
-const TransactionsPage = React.lazy(() => import("./pages/TransactionsPage"));
+const TransactionsPage = React.lazy(() =>
+  import("./pages/TransactionsPage").then((module) => ({
+    default: module.TransactionsPage,
+  }))
+);
+const UserTransactionsPage = React.lazy(() =>
+  import("./pages/UserTransactionsPage").then((module) => ({
+    default: module.UserTransactionsPage,
+  }))
+);
 const AnalyticsPage = React.lazy(() => import("./pages/AnalyticsPage"));
 const NotFoundPage = React.lazy(() => import("./pages/NotFoundPage"));
 
@@ -58,6 +67,16 @@ function App() {
                     <ProtectedRoute>
                       <Layout>
                         <TransactionsPage />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/transactions/user/:userId" // New route for user-specific transactions
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <UserTransactionsPage />
                       </Layout>
                     </ProtectedRoute>
                   }

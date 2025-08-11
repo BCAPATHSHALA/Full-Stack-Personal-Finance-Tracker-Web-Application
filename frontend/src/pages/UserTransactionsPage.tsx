@@ -1,23 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type React from "react";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef } from "react"; // Import useRef
+import { useParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { useTransactions } from "../hooks/useTransactions";
-import { Button } from "@/components/ui/button";
+import { useUserTransactions } from "../hooks/useTransactions";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { Plus } from "lucide-react";
 import { TransactionTable } from "@/components/transactions/TransactionTable";
 import {
   TransactionFilters,
   type FiltersType,
 } from "@/components/transactions/TransactionFilters";
-import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 interface Transaction {
   id: string;
@@ -34,10 +34,11 @@ interface Transaction {
   };
 }
 
-export const TransactionsPage: React.FC = () => {
-  const { user } = useAuth();
+export const UserTransactionsPage: React.FC = () => {
+  const { userId } = useParams<{ userId: string }>();
+  const { user: currentUser } = useAuth();
   const { transactions, loading, error, pagination, fetchTransactions } =
-    useTransactions();
+    useUserTransactions(userId);
 
   const [filters, setFilters] = useState<FiltersType>({
     page: 1,
@@ -51,13 +52,14 @@ export const TransactionsPage: React.FC = () => {
     sortOrder: "desc",
   });
 
-  const canModify = user?.role === "ADMIN" || user?.role === "USER";
+  // A user can modify their own transactions, or an ADMIN can modify any user's transactions
+  const canModify = currentUser?.role === "ADMIN" || currentUser?.id === userId;
 
   // Debounce ref
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Debounced fetch function
-  const debouncedFetchTransactions = useCallback(
+  // Debounced fetch function for user-specific transactions
+  const debouncedFetchUserTransactions = useCallback(
     (newFilters: FiltersType) => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
@@ -76,14 +78,16 @@ export const TransactionsPage: React.FC = () => {
   );
 
   useEffect(() => {
-    debouncedFetchTransactions(filters);
+    if (userId) {
+      debouncedFetchUserTransactions(filters);
+    }
     // Cleanup on unmount
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [filters, debouncedFetchTransactions]);
+  }, [filters, userId, debouncedFetchUserTransactions]);
 
   const handleFilterChange = (key: keyof FiltersType, value: any) => {
     setFilters((prev) => ({
@@ -96,24 +100,41 @@ export const TransactionsPage: React.FC = () => {
   const handleEdit = async (transaction: Transaction) => {
     console.log("Editing transaction:", transaction);
   };
-
   const handleDelete = async (id: string) => {
     console.log("Deleting transaction with ID:", id);
   };
 
-  const navigate = useNavigate();
-  const handleGetUserTransactions = async (userId: string) => {
-    navigate(`/transactions/user/${userId}`);
-  };
+  if (!userId) {
+    return (
+      <div className="text-center py-12">
+        <h1 className="text-2xl font-bold">User ID Missing</h1>
+        <p className="text-muted-foreground">
+          Please provide a user ID to view transactions.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Transactions</h1>
+          <h1 className="text-3xl font-bold">Transactions for {userId}</h1>
           <p className="text-muted-foreground">
-            Manage your income and expense transactions
+            Manage transactions for this user.
           </p>
+          {/* Name, Email, and Role of specific user */}
+          {transactions[0]?.user && (
+            <div className="mt-4">
+              <p className="font-medium">{transactions[0]?.user?.name}</p>
+              <p className="text-sm text-muted-foreground">
+                {transactions[0]?.user?.email}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Role: {transactions[0]?.user?.role || "N/A"}
+              </p>
+            </div>
+          )}
         </div>
         {canModify && (
           <Button>
@@ -144,9 +165,9 @@ export const TransactionsPage: React.FC = () => {
             canModify={canModify}
             handleEdit={handleEdit}
             handleDelete={handleDelete}
-            handleGetUserTransactions={handleGetUserTransactions}
+            handleGetUserTransactions={undefined} // Not applicable for this page
             handlePageChange={(page) => handleFilterChange("page", page)}
-            showUserColumn={user?.role === "ADMIN"}
+            showUserColumn={false}
           />
         </CardContent>
       </Card>
