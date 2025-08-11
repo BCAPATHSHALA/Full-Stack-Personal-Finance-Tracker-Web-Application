@@ -54,7 +54,7 @@ function App() {
                 <Route
                   path="/dashboard"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute roles={["ADMIN", "USER", "READ_ONLY"]}>
                       <Layout>
                         <DashboardPage />
                       </Layout>
@@ -64,7 +64,7 @@ function App() {
                 <Route
                   path="/transactions"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute roles={["ADMIN", "USER"]}>
                       <Layout>
                         <TransactionsPage />
                       </Layout>
@@ -72,9 +72,9 @@ function App() {
                   }
                 />
                 <Route
-                  path="/transactions/user/:userId" // New route for user-specific transactions
+                  path="/transactions/user/:userId"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute roles={["ADMIN", "USER"]}>
                       <Layout>
                         <UserTransactionsPage />
                       </Layout>
@@ -84,7 +84,7 @@ function App() {
                 <Route
                   path="/analytics"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute roles={["ADMIN", "USER", "READ_ONLY"]}>
                       <Layout>
                         <AnalyticsPage />
                       </Layout>

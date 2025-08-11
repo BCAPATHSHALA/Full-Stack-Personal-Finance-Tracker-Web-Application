@@ -97,7 +97,6 @@ export const UserTransactionsPage: React.FC = () => {
     }));
   };
 
-
   // Todo: Implement actual edit and delete functionality
   const handleEdit = async (transaction: Transaction) => {
     console.log("Editing transaction:", transaction);
@@ -138,7 +137,7 @@ export const UserTransactionsPage: React.FC = () => {
             </div>
           )}
         </div>
-        {canModify && (
+        {canModify && userId === currentUser?.id && (
           <Button>
             <Plus className="w-4 h-4 mr-2" />
             Add Transaction

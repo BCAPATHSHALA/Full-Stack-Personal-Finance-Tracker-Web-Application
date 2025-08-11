@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2, TrendingUpDown } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Transaction {
   id: string;
@@ -61,6 +62,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   handlePageChange,
   showUserColumn = false,
 }) => {
+  const { user } = useAuth();
   return (
     <>
       {error && (
@@ -136,10 +138,11 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                   {canModify && (
                     <TableCell>
                       <div className="flex space-x-2">
-                        {/* Edit and Delete buttons */}
+                        {/* Edit and Delete buttons are only anable to the user who created the transaction */}
                         <Button
                           variant="outline"
                           size="sm"
+                          disabled={user?.id !== transaction.user?.id}
                           onClick={() => handleEdit(transaction)}
                         >
                           <Edit className="w-4 h-4" />
@@ -147,6 +150,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                         <Button
                           variant="outline"
                           size="sm"
+                          disabled={user?.id !== transaction.user?.id}
                           onClick={() => handleDelete(transaction.id)}
                         >
                           <Trash2 className="w-4 h-4" />

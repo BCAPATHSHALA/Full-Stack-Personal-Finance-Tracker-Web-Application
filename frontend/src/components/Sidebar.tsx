@@ -26,7 +26,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       name: "Transactions",
       href: "/transactions",
       icon: CreditCard,
-      roles: ["ADMIN", "USER", "READ_ONLY"],
+      roles: ["ADMIN", "USER"],
       description: "Manage income and expenses",
     },
     {

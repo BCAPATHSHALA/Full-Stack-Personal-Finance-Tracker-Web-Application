@@ -102,6 +102,7 @@ export const useTransactions = (): UseTransactionsReturn => {
   });
   const [lastFilters, setLastFilters] = useState<TransactionFilters>({});
 
+  // Method 1: Fetch transactions with filters
   const fetchTransactions = useCallback(
     async (filters: TransactionFilters = {}) => {
       setLoading(true);
@@ -141,6 +142,7 @@ export const useTransactions = (): UseTransactionsReturn => {
     [setLoading, setError, setLastFilters, setTransactions, setPagination]
   );
 
+  // Method 2: Add a new transaction
   const addTransaction = useCallback(
     async (transaction: Omit<Transaction, "id" | "updatedAt" | "user">) => {
       setError(null);
@@ -160,6 +162,7 @@ export const useTransactions = (): UseTransactionsReturn => {
     [fetchTransactions, lastFilters] // Depends on fetchTransactions and lastFilters
   );
 
+  // Method 3: Update an existing transaction
   const updateTransaction = useCallback(
     async (
       id: string,
@@ -184,6 +187,7 @@ export const useTransactions = (): UseTransactionsReturn => {
     [fetchTransactions, lastFilters] // Depends on fetchTransactions and lastFilters
   );
 
+  // Method 4: Delete a transaction
   const deleteTransaction = useCallback(
     async (id: string) => {
       setError(null);
@@ -205,6 +209,7 @@ export const useTransactions = (): UseTransactionsReturn => {
     [fetchTransactions, lastFilters] // Depends on fetchTransactions and lastFilters
   );
 
+  // Method 5: Refresh transactions with last known filters
   const clearError = useCallback(() => {
     setError(null);
   }, []);
@@ -238,6 +243,7 @@ export const useUserTransactions = (userId?: string) => {
   });
   const [lastFilters, setLastFilters] = useState<TransactionFilters>({});
 
+  // Method 1: Fetch user-specific transactions
   const fetchUserTransactions = useCallback(
     async (filters: TransactionFilters = {}) => {
       if (!userId) {
@@ -287,6 +293,7 @@ export const useUserTransactions = (userId?: string) => {
     ]
   );
 
+  // Method 2: Add a new transaction for the user
   const addTransaction = useCallback(
     async (transaction: Omit<Transaction, "id" | "updatedAt" | "user">) => {
       setError(null);
@@ -313,6 +320,7 @@ export const useUserTransactions = (userId?: string) => {
     [userId, fetchUserTransactions, lastFilters]
   );
 
+  // Method 3: Update an existing transaction for the user
   const updateTransaction = useCallback(
     async (
       id: string,
@@ -341,6 +349,7 @@ export const useUserTransactions = (userId?: string) => {
     [userId, fetchUserTransactions, lastFilters]
   );
 
+  // Method 4: Delete a transaction for the user
   const deleteTransaction = useCallback(
     async (id: string) => {
       setError(null);
@@ -366,10 +375,12 @@ export const useUserTransactions = (userId?: string) => {
     [userId, fetchUserTransactions, lastFilters]
   );
 
+  // Method 5: Refresh user transactions with last known filters
   const refreshTransactions = useCallback(async () => {
     await fetchUserTransactions(lastFilters);
   }, [fetchUserTransactions, lastFilters]);
 
+  // Method 6: Clear any error messages
   const clearError = useCallback(() => {
     setError(null);
   }, []);
