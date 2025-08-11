@@ -24,6 +24,10 @@ import {
   type TransactionUpdateData,
 } from "@/components/transactions/EditTransactionDialog";
 import { DeleteTransactionDialog } from "@/components/transactions/DeleteTransactionDialog";
+import {
+  AddTransactionDialog,
+  type TransactionFormData,
+} from "@/components/transactions/AddTransactionDialog";
 
 interface Transaction {
   id: string;
@@ -48,6 +52,7 @@ export const TransactionsPage: React.FC = () => {
     error,
     pagination,
     fetchTransactions,
+    addTransaction,
     updateTransaction,
     deleteTransaction,
   } = useTransactions();
@@ -64,6 +69,7 @@ export const TransactionsPage: React.FC = () => {
     sortOrder: "desc",
   });
 
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] =
@@ -111,6 +117,26 @@ export const TransactionsPage: React.FC = () => {
       [key]: value,
       page: key !== "page" ? 1 : value,
     }));
+  };
+
+  const onAddSubmit = async (data: TransactionFormData) => {
+    try {
+      if (!data.date) {
+        throw new Error("Date is required");
+      }
+
+      const dateObj =
+        typeof data.date === "string" ? new Date(data.date) : data.date;
+
+      await addTransaction({
+        ...data,
+        date: dateObj.toISOString(),
+      });
+
+      setIsAddDialogOpen(false);
+    } catch (err) {
+      console.error("Add transaction error:", err);
+    }
   };
 
   const onEditSubmit = async (data: TransactionUpdateData) => {
@@ -172,7 +198,7 @@ export const TransactionsPage: React.FC = () => {
           </p>
         </div>
         {canModify && (
-          <Button>
+          <Button onClick={() => setIsAddDialogOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Add Transaction
           </Button>
@@ -208,6 +234,13 @@ export const TransactionsPage: React.FC = () => {
       </Card>
 
       {/* Dialogs: Add, Edit and Delete */}
+      <AddTransactionDialog
+        isOpen={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        onSubmit={onAddSubmit}
+        isSubmitting={loading}
+      />
+
       <EditTransactionDialog
         isOpen={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
