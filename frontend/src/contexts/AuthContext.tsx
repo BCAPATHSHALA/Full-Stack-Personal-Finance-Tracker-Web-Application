@@ -79,36 +79,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     fetchCurrentUser();
   }, [fetchCurrentUser]);
 
-  const login = useCallback(
-    async (email: string, password: string) => {
-      const response = await fetch(`${apiBase}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ email, password }),
-      });
+  const login = useCallback(async (email: string, password: string) => {
+    const response = await fetch(`${apiBase}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ email, password }),
+    });
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Login failed");
+    }
+
+    // Fetch user data after successful login
+    const userResponse = await fetch(`${apiBase}/auth/me`, {
+      credentials: "include",
+    });
+
+    if (userResponse.ok) {
+      const userData = await userResponse.json();
+      if (userData.success && userData.user) {
+        setUser(userData.user);
       }
-
-      // Fetch user data after successful login
-      const userResponse = await fetch(`${apiBase}/auth/me`, {
-        credentials: "include",
-      });
-
-      if (userResponse.ok) {
-        const userData = await userResponse.json();
-        if (userData.success && userData.user) {
-          setUser(userData.user);
-        }
-      }
-    },
-    [apiBase]
-  );
+    }
+  }, [apiBase]);
 
   const register = useCallback(
     async (
@@ -149,7 +146,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const logout = useCallback(async () => {
     try {
-      await fetch(`${apiBase}/auth/logout`, {
+      await fetch(`/api/auth/logout`, {
         method: "POST",
         credentials: "include",
       });
@@ -159,7 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser(null);
       setInitialized(false);
     }
-  }, [apiBase]);
+  }, []);
 
   const value = {
     user,
