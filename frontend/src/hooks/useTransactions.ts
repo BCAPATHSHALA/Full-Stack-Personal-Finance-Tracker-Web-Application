@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useCallback } from "react";
 import api from "@/lib/axios";
 import { AxiosError } from "axios";
