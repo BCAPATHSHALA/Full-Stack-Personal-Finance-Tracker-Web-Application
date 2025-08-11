@@ -146,9 +146,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const logout = useCallback(async () => {
     try {
-      await fetch(`/api/auth/logout`, {
+      await fetch(`${apiBase}/auth/logout`, {
         method: "POST",
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        }
       });
     } catch (error) {
       console.error("Logout error:", error);
@@ -156,7 +159,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser(null);
       setInitialized(false);
     }
-  }, []);
+  }, [apiBase]);
 
   const value = {
     user,
