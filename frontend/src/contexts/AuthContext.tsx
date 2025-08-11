@@ -48,13 +48,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
 
+  const apiBase =
+    import.meta.env.MODE === "development"
+      ? "/api"
+      : `${import.meta.env.VITE_API_URL}/api`;
+
   const fetchCurrentUser = useCallback(async () => {
     if (initialized) return;
 
     try {
-      const response = await fetch("/api/auth/me", {
+      const response = await fetch(`${apiBase}/auth/me`, {
         credentials: "include",
       });
+
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.user) {
@@ -67,39 +73,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setLoading(false);
       setInitialized(true);
     }
-  }, [initialized]);
+  }, [initialized, apiBase]);
 
   useEffect(() => {
     fetchCurrentUser();
   }, [fetchCurrentUser]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ email, password }),
-    });
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const response = await fetch(`${apiBase}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || "Login failed");
-    }
-
-    // Fetch user data after successful login
-    const userResponse = await fetch("/api/auth/me", {
-      credentials: "include",
-    });
-
-    if (userResponse.ok) {
-      const userData = await userResponse.json();
-      if (userData.success && userData.user) {
-        setUser(userData.user);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
       }
-    }
-  }, []);
+
+      // Fetch user data after successful login
+      const userResponse = await fetch(`${apiBase}/auth/me`, {
+        credentials: "include",
+      });
+
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        if (userData.success && userData.user) {
+          setUser(userData.user);
+        }
+      }
+    },
+    [apiBase]
+  );
 
   const register = useCallback(
     async (
@@ -109,7 +118,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       confirmPassword: string,
       role?: string
     ) => {
-      const response = await fetch("/api/auth/register", {
+      const response = await fetch(`${apiBase}/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -124,7 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       // Fetch user data after successful registration
-      const userResponse = await fetch("/api/auth/me", {
+      const userResponse = await fetch(`${apiBase}/auth/me`, {
         credentials: "include",
       });
 
@@ -135,12 +144,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       }
     },
-    []
+    [apiBase]
   );
 
   const logout = useCallback(async () => {
     try {
-      await fetch("/api/auth/logout", {
+      await fetch(`${apiBase}/auth/logout`, {
         method: "POST",
         credentials: "include",
       });
@@ -150,7 +159,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser(null);
       setInitialized(false);
     }
-  }, []);
+  }, [apiBase]);
 
   const value = {
     user,
