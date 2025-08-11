@@ -161,6 +161,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                           <Button
                             variant="outline"
                             size="sm"
+                            disabled={user?.role !== "ADMIN"}
                             onClick={() =>
                               handleGetUserTransactions?.(
                                 `${transaction.user?.id}`
