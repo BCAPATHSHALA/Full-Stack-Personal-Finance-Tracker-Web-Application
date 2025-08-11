@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-refresh/only-export-components */
 import type React from "react";
 import {
@@ -80,33 +79,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     fetchCurrentUser();
   }, [fetchCurrentUser]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const response = await fetch(`${apiBase}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ email, password }),
-    });
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const response = await fetch(`${apiBase}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || "Login failed");
-    }
-
-    // Fetch user data after successful login
-    const userResponse = await fetch(`${apiBase}/auth/me`, {
-      credentials: "include",
-    });
-
-    if (userResponse.ok) {
-      const userData = await userResponse.json();
-      if (userData.success && userData.user) {
-        setUser(userData.user);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
       }
-    }
-  }, [apiBase]);
+
+      // Fetch user data after successful login
+      const userResponse = await fetch(`${apiBase}/auth/me`, {
+        credentials: "include",
+      });
+
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        if (userData.success && userData.user) {
+          setUser(userData.user);
+        }
+      }
+    },
+    [apiBase]
+  );
 
   const register = useCallback(
     async (
@@ -152,7 +154,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-        }
+        },
       });
     } catch (error) {
       console.error("Logout error:", error);
@@ -160,7 +162,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser(null);
       setInitialized(false);
     }
-  }, []);
+  }, [apiBase]);
 
   const value = {
     user,
