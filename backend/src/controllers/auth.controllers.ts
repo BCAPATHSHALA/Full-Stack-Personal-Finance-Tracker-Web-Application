@@ -61,7 +61,7 @@ export const registerController = async (req: Request, res: Response) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // <-- allows cross-site cookies when in production OTW 'lax' means 'same-site'
       expires: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
     });
 
@@ -116,7 +116,7 @@ export const loginController = async (req: Request, res: Response) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // <-- allows cross-site cookies when in production OTW 'lax' means 'same-site'
       expires: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
     });
 
