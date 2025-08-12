@@ -116,7 +116,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                         : "text-red-600"
                     }
                   >
-                    ${transaction.amount.toFixed(2)}
+                    ₹{transaction.amount.toFixed(2)}
                   </TableCell>
                   {showUserColumn && (
                     <TableCell>
