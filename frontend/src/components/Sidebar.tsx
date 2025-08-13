@@ -8,8 +8,8 @@ import {
   CreditCard,
   Home,
   LogOut,
+  TrendingUp,
   User2,
-  Wallet,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -60,11 +60,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     <div className={cn("pb-12 w-64", className)}>
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
-          <div className="flex items-center mb-4">
-            <Wallet className="h-6 w-6 mr-2" />
-            <h2 className="text-lg font-semibold tracking-tight">
-              Finance Tracker
-            </h2>
+          <div className="flex items-center mb-4 gap-1">
+            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-slate-800">
+              FinanceTracker
+            </span>
           </div>
 
           {/* User Info */}
